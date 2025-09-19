@@ -1,12 +1,14 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 type ModalProps = {
   onSubmit: () => boolean;
+  eventId: string|null;
 };
 
-const Modal: React.FC<ModalProps> = ({ onSubmit }) => {
+const Modal: React.FC<ModalProps> = ({ onSubmit ,eventId}) => {
   const [isOpen, setIsOpen] = useState(false);
+   const navigate = useNavigate();
 
   const closeModal = () => {
     setIsOpen(false);
@@ -36,14 +38,12 @@ const Modal: React.FC<ModalProps> = ({ onSubmit }) => {
             className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 bg-white p-6 rounded-lg shadow-lg " // 画面中央に配置、z-50で最高層
           >
             <p>出欠の入力が完了しました</p>
-            <Link to="/attendancesheet">
               <button
-                onClick={closeModal}
+                onClick={() => (closeModal(),navigate(`/attendancesheet?id=${eventId}`))}
                 className="mt-4 bg-gray-300 p-2 rounded"
               >
                 閉じる
               </button>
-            </Link>
           </div>
         </>
       )}

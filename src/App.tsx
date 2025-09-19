@@ -77,7 +77,8 @@ function App() {
   };
   
   return (
-    <div className=" bg-lime-100 flex-col space-y-[40px] p-8">
+    
+    <div className=" bg-lime-100 flex-col space-y-[40px] ">
       <Header />
       <div className="flex gap-x-[20px] justify-center ">
         <div className="space-y-2">
