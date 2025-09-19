@@ -72,12 +72,12 @@ function App() {
     localStorage.setItem("events", JSON.stringify(events));
 
     localStorage.setItem("latestEventId", eventData.id);
-    navigate("/attendancesheet");
+    navigate("/attendancesheet?id=" + eventData.id);
     console.log("データをローカルストレージに保存しました:", eventData);
   };
-
+  
   return (
-    <div className=" bg-lime-100 flex-col space-y-[40px]">
+    <div className=" bg-lime-100 flex-col space-y-[40px] p-8">
       <Header />
       <div className="flex gap-x-[20px] justify-center ">
         <div className="space-y-2">
@@ -177,7 +177,7 @@ function App() {
                 </div>
                 <div className="mt-4 flex justify-end space-x-2">
                   <button 
-                    onClick={() => navigate(`/attendancesheet`)}
+                    onClick={() => navigate(`/attendancesheet?id=${event.id}`)}
                     className="bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 transition-colors"
                   >
                     出欠表を見る

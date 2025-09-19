@@ -2,6 +2,7 @@ import Header from "./components/ui/Header";
 import Modal from "./components/ui/Modal";
 import CandidateDatesInput from "./components/ui/CandidateDatesInput";
 import { useState, useEffect } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom"; // useSearchParamsとuseNavigateをインポート
 
 type Choice = "circle" | "triangle" | "cross";
 type Participant = {
@@ -23,14 +24,16 @@ function AttendanceInput() {
   const [comment, setComment] = useState<string>("");
   const [candidateDates, setCandidateDates] = useState<string[]>([]);
   const [availability, setAvailability] = useState<Record<string, Choice>>({});
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
 
   useEffect(() => {
+    const eventId = searchParams.get('id'); // URLから'id'パラメータを取得
     const savedEvents = localStorage.getItem("events");
-    const latestEventId = localStorage.getItem("latestEventId");
 
-    if (savedEvents && latestEventId) {
+    if (savedEvents && eventId) {
       const events: EventData[] = JSON.parse(savedEvents);
-      const latestEvent = events.find((ev) => ev.id === latestEventId);
+      const latestEvent = events.find((ev) => ev.id === eventId);
       if (latestEvent && Array.isArray(latestEvent.candidateDates)) {
         setCandidateDates(latestEvent.candidateDates);
 
@@ -41,23 +44,23 @@ function AttendanceInput() {
         setAvailability(initialAvailability); // stateを更新
       }
     }
-  }, []);
+  }, [searchParams]);
 
   const handleSubmit = () => {
     if (!name.trim()) {
       alert("名前を入力してください");
       return false;
     }
-
+    
+    const eventId = searchParams.get('id');
     const savedEvents = localStorage.getItem("events");
-    const latestEventId = localStorage.getItem("latestEventId");
 
-    if (savedEvents && latestEventId) {
+    if (savedEvents && eventId) {
       const events: EventData[] = JSON.parse(savedEvents);
       const updatedEvents = events.map((ev) => {
-        if (ev.id === latestEventId) {
+        if (ev.id === eventId) {
           const newParticipant: Participant = {
-            id: Date.now().toString(),
+            id: crypto.randomUUID(), // UUIDでIDを生成
             name,
             comment,
             availability,
@@ -69,8 +72,8 @@ function AttendanceInput() {
         }
         return ev;
       });
-
       localStorage.setItem("events", JSON.stringify(updatedEvents));
+      navigate(`/attendancesheet?id=${eventId}`); // フォーム送信後に元の出欠表に戻る
     }
     return true;
   };

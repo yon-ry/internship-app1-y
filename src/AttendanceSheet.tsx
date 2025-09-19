@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import Header from "./components/ui/Header";
 import AttendanceTable from "./components/ui/AttendanceTable";
-import { Link } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom"; // useNavigate, useSearchParamsをインポート
 
 type Choice = "circle" | "triangle" | "cross";
 type Participant = {
@@ -21,19 +21,41 @@ type EventData = {
 
 function AttendanceSheet() {
   const [eventsData, setEventsData] = useState<EventData | null>(null);
+  const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
 
   useEffect(() => {
+    const eventId = searchParams.get('id'); // URLから'id'パラメータを取得
     const savedEvents = localStorage.getItem("events");
-    const latestEventId = localStorage.getItem("latestEventId");
 
-    if (savedEvents && latestEventId) {
+    if (savedEvents && eventId) { // eventIdが存在する場合にのみ検索を実行
       const events = JSON.parse(savedEvents);
-      const latestEvent = events.find((ev: EventData) => ev.id === latestEventId);
-      if (latestEvent) {
-        setEventsData(latestEvent);
+      const targetEvent = events.find((ev: EventData) => ev.id === eventId);
+      if (targetEvent) {
+        setEventsData(targetEvent);
+      } else {
+        console.error("指定されたIDのイベントが見つかりません。");
+        setEventsData(null);
+      }
+    } else {
+      // IDが指定されていない場合は、最新のイベントを読み込む（既存の動作）
+      const latestEventId = localStorage.getItem("latestEventId");
+      if (savedEvents && latestEventId) {
+        const events = JSON.parse(savedEvents);
+        const latestEvent = events.find((ev: EventData) => ev.id === latestEventId);
+        if (latestEvent) {
+          setEventsData(latestEvent);
+        }
       }
     }
-  }, []);
+  }, [searchParams]);
+
+  // 出欠入力ページに遷移する関数
+  const handleNavigateToInput = () => {
+    // 現在のURLのIDを保持して遷移
+    const eventId = searchParams.get('id');
+    navigate(`/attendanceinput?id=${eventId}`);
+  };
 
   if (!eventsData) {
     return (
@@ -67,11 +89,12 @@ function AttendanceSheet() {
           <AttendanceTable candidateDates={eventsData.candidateDates} participants={eventsData.participants} />
         </div>
         <div className="flex justify-center">
-          <Link to="/attendanceInput">
-            <button className="text-[50px] w-[900px] h-[100px] bg-green-500 px-4 py-2 border  rounded-md  text-white">
-              出欠を入力する
-            </button>
-          </Link>
+          <button
+            onClick={handleNavigateToInput}
+            className="text-[50px] w-[900px] h-[100px] bg-green-500 px-4 py-2 border  rounded-md  text-white"
+          >
+            出欠を入力する
+          </button>
         </div>
       </div>
     </div>
