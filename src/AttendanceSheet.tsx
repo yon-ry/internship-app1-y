@@ -1,11 +1,79 @@
-import React from "react";
+import { useState, useEffect } from "react";
 import Header from "./components/ui/Header";
+import AttendanceTable from "./components/ui/AttendanceTable";
+import { Link } from "react-router-dom";
+
+type Choice = "circle" | "triangle" | "cross";
+type Participant = {
+  id: string;
+  name: string;
+  comment?: string;
+  availability: Record<string, Choice>;
+};
+
+type EventData = {
+  id: string;
+  eventName: string;
+  memo: string;
+  candidateDates: string[];
+  participants: Participant[];
+};
 
 function AttendanceSheet() {
+  const [eventsData, setEventsData] = useState<EventData | null>(null);
+
+  useEffect(() => {
+    const savedEvents = localStorage.getItem("events");
+    const latestEventId = localStorage.getItem("latestEventId");
+
+    if (savedEvents && latestEventId) {
+      const events = JSON.parse(savedEvents);
+      const latestEvent = events.find((ev: EventData) => ev.id === latestEventId);
+      if (latestEvent) {
+        setEventsData(latestEvent);
+      }
+    }
+  }, []);
+
+  if (!eventsData) {
+    return (
+      <div>
+        <Header />
+        <p className="text-center mt-10 text-gray-500 text-xl">
+          イベントデータが見つかりません。
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div>
       <Header />
-      AttendanceSheet
+      <div className="flex-col bg-white ml-40 space-y-2">
+        <p className="text-gray-500 text-[50px] font-bold">
+          {eventsData.eventName}
+        </p>
+        <p className="text-gray-500 text-[20px]">回答者{eventsData.participants.length}名</p>
+        <p className="text-gray-500 text-[35px]">{eventsData.memo}</p>
+      </div>
+      <div className="bg-gray-50 ">
+        <div className="space-x-4  ml-40 ">
+          <span className="text-[24px] font-bold bg-gray-500 text-white px-2 py-1">
+            {" "}
+          </span>
+          <span className="text-[24px] font-bold ">日程候補</span>
+        </div>
+        <div className="flex justify-center">
+          <AttendanceTable candidateDates={eventsData.candidateDates} participants={eventsData.participants} />
+        </div>
+        <div className="flex justify-center">
+          <Link to="/attendanceInput">
+            <button className="text-[50px] w-[900px] h-[100px] bg-green-500 px-4 py-2 border  rounded-md  text-white">
+              出欠を入力する
+            </button>
+          </Link>
+        </div>
+      </div>
     </div>
   );
 }
